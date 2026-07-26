@@ -2,6 +2,14 @@
 
 > <Bir cümlelik proje açıklaması.>
 
+> ### 🤖 AI ajanıysan buradan başla
+>
+> **Bu repoda herhangi bir iş yapmadan önce [`AGENTS.md`](AGENTS.md) dosyasını oku — zorunludur.**
+>
+> İçinde: oturum protokolü (çakışma kontrolü, devir kayıtları), kesin kurallar, hazır komutlar ve Notion referansları. Projeyi tanımak için oradaki **"İlk kez buradaysan — okuma sırası"** bölümünü izle; repo ve Notion'u birlikte kapsıyor.
+>
+> Bu org'da iki geliştirici **dört ayrı ajanla** çalışıyor. Protokolü atlarsan başkasının açık işinin üzerine yazabilirsin.
+
 <!--
   YENİ PROJE KURUYORSANIZ — doldurulacaklar:
     1. Yukarıdaki başlık ve tek cümlelik açıklama
