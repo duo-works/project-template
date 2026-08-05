@@ -15,22 +15,25 @@ Notion bağlantın yoksa 3, 4 ve 5. adımları okuyamazsın. Bu durumda **uydurm
 `AGENTS.md` → "Kullanıcıya ne anlatmalısın" başlığındaki altı alanı sırayla cevapla. **Her iddianın altına kaynağını yaz:**
 
 ```
-Kod henüz yok, yığın seçilmedi.
-  └ kaynak: DW-6 (Not started) · README §Bu proje şu an nerede
-
 v1'de AI ile video üretimi YOK — ikinci faz.
   └ kaynak: PRD §Kapsam — ilk sürümde OLMAYACAKLAR
 
-Kota tavanı günde ~5 video.
-  └ kaynak: PRD §Kota bütçesi — PRD "güncel dokümandan teyit edin" diyor
+Dış API günlük bütçesi 10.000 birim; bir iş 1.651 birim.
+  └ kaynak: src/<paket>/kota.py §docstring
+
+Notion hesabı ortak kullanılıyor; hangi geliştirici olduğun
+git config user.name'den gelir.
+  └ kaynak: AGENTS.md §Oturum BAŞINDA
 ```
+
+⚠️ **Bu örnekler yazıldıkları günün gerçeğini gösterir.** Bağlayıcı olan **biçim**, sayılar değil. Kendi özetindeki her iddiayı kaynağından tazele — buradan kopyalama. (Eskiden burada "tavan ~5 video" yazıyordu; testler doğrusunun 6 olduğunu gösterdi ama bu örnek düzeltilmeden kaldı.)
 
 Geçerli kaynak biçimleri:
 
 | Tür | Örnek |
 |---|---|
 | Notion sayfası + bölüm | `PRD §Bilinen kısıtlar` |
-| Görev | `DW-6 (Not started)` |
+| Görev | `DW-42 (In progress)` |
 | Repo dosyası | `AGENTS.md §Kesin kurallar` · `docs/decisions/0002-...` |
 | Sorgu sonucu | `Oturum Kaydı sorgusu: 0 aktif kayıt` |
 | Komut çıktısı | `git rev-list --count origin/main → 1` |

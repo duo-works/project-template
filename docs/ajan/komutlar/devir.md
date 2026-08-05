@@ -41,6 +41,10 @@ Denenip işe yaramayan yolları yazmak da en az yapılanlar kadar değerli: ayn�
 - Commit edilmemiş değişiklik varsa kullanıcıya sor: commit mi, stash mi, olduğu gibi mi kalacak
 - Branch push edilmemişse söyle — devralan onu göremez
 - Worktree kullandıysan yolunu `## Dikkat` altına yaz
+- **Repo'da zamanlanmış bir iş varsa hangi ref'te olduğunu yaz.**
+  Böyle bir hat genellikle sabit bir ref'e iğneli olur ve merge onu taşımaz;
+  devralan aksi hâlde kodun canlıda çalıştığını sanır. Tazeleme gerekiyor ama
+  yapılmadıysa bunu `## Sıradaki adım`a komut seviyesinde yaz.
 
 ## 5. Raporla
 

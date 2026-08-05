@@ -4,7 +4,9 @@ Bu dosya Claude Code, Codex ve benzeri ajanların bu repo'da çalışırken uyma
 
 ## Bağlam
 
-Bu repo `duo-works` organizasyonuna ait, iki kişilik bir ekip tarafından geliştiriliyor. **Her iki geliştirici de kendi AI ajanlarıyla aynı repo üzerinde çalışıyor.** Görev takibi **Notion**'da, kod review **GitHub PR**'da yapılır. GitHub Issues kapalıdır.
+Bu repo `duo-works` organizasyonuna ait, iki kişilik bir ekip tarafından geliştiriliyor. **Her iki geliştirici de kendi AI ajanlarıyla aynı repo üzerinde çalışıyor.** Görev takibi **Notion**'da, kod değişiklikleri ve teknik tartışma **GitHub PR**'da tutulur. GitHub Issues kapalıdır.
+
+**İnsan review veya onayı merge ön koşulu değildir** — kapıyı CI tutuyor (`ci-ok` + `pr-title-ok`). Gerekçe: [ADR-0012](docs/decisions/0012-org-repo-politikasi.md).
 
 ---
 
@@ -18,7 +20,7 @@ Sırayla:
 |---|---|---|
 | 1 | Bu dosyanın tamamı | Kurallar, oturum protokolü, komutlar |
 | 2 | [`README.md`](README.md) | Proje ne yapıyor, hangi aşamada |
-| 3 | Notion → [🎬 Yt_Automation PRD](https://app.notion.com/p/3a79bfc93b2e813087b6c35c78af0ee7) | Kapsam, ilk sürümde **olmayacaklar**, kota kısıtları, açık sorular |
+| 3 | Notion → **bu projenin PRD'si** (📚 Bilgi Bankası altında) | Kapsam, ilk sürümde **olmayacaklar**, bilinen kısıtlar, açık sorular |
 | 4 | Notion → [📋 Görevler](https://app.notion.com/p/93190546ef3941c88ab1d2bd0d1fface) | Sıradaki iş, DW-ID'ler, kim neyi almış |
 | 5 | Notion → [📓 Oturum Kaydı](https://app.notion.com/p/cb1df32162934baba379c8733813893f) → `🔴 Aktif` | Kim şu an neye dokunuyor |
 | 6 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | İnsan tarafı süreç |
@@ -54,7 +56,7 @@ Protokol Notion'a bağlı. Bağlantı yoksa protokol sessizce çalışmaz: "akti
 1. **Notion MCP bağlantısı var mı?** `📓 Oturum Kaydı` data source'una bir sorgu at (aşağıdaki SQL). Hata alıyorsan bağlantı yok.
 2. **Kullanıcı workspace üyesi mi?** Notion kullanıcı listesini çek; kullanıcının adı orada mı bak. Değilse `Kişi` alanı doldurulamaz.
 3. **`📋 Görevler`'e erişim var mı?** DW-ID okuyabiliyor musun? Okuyamıyorsan branch adı kuralı uygulanamaz.
-4. **`main` güncel mi?** `git switch main && git pull`.
+4. **`main` güncel mi?** Sırayla `git switch main` ve `git pull`.
 
 Herhangi biri başarısızsa **çoklu-ajan işine başlama.** Kullanıcıya hangisinin eksik olduğunu söyle ve kurulum rehberine yönlendir: Notion → 📚 Bilgi Bankası → **Ajan Kurulumu**.
 
@@ -62,23 +64,41 @@ Doğrulama geçtiyse bunu bir kez `Tür = "Not"` kaydıyla Notion'a yaz — diğ
 
 ### Oturum BAŞINDA — kod yazmadan önce
 
-1. **Aktif kayıtları sorgula.** `📓 Oturum Kaydı` → `Durum = "Devam ediyor"` olan tüm satırlar.
-2. **Çakışma kontrolü.** **Bu oturuma ait olmayan** her aktif kayıt kontrol edilir — `Dokunulan alanlar` senin gireceğin dosyalarla kesişiyorsa: **başlama.** Kullanıcıya çakışmayı bildir, ne yapılacağını sor.
+1. **Kimliğini belirle.** Notion hesabı ortak kullanılıyor — kimin çalıştığını *bilmiyor*. Kaynak git kimliğidir:
+
+   ```bash
+   git config user.name
+   ```
+
+   | Değer | `Kişi` |
+   |---|---|
+   | `Mirza Sarıbıyık` | `Mirza` |
+   | `Ömer Faruk Güleç` · `ofgworks` | `Ömer` |
+
+   Değer boşsa veya tabloda yoksa **kullanıcıya sor** — tahmin etme. Yanlış atfedilen bir kayıt sessizce yanlış kalır.
+
+2. **Aktif kayıtları sorgula.** `📓 Oturum Kaydı` → `Durum = "Devam ediyor"` olan tüm satırlar.
+3. **🚦 Kanaryayı doğrula.** Sonuçta `Tür = "Kanarya"` satırı **yoksa** kanal bozuktur: sorgu çalışmış gibi görünüp boş dönmüş olabilir. Kullanıcıya söyle ve **çoklu-ajan işine başlama.** Tek başına çalıştığını kullanıcı teyit ederse devam edilebilir.
+4. **Çakışma kontrolü.** **Bu oturuma ait olmayan** her aktif kayıt kontrol edilir — `Dokunulan alanlar` senin gireceğin dosyalarla kesişiyorsa: **başlama.** Kullanıcıya çakışmayı bildir, ne yapılacağını sor. Kanaryayı bu karşılaştırmaya **katma** (`Tür = "Kanarya"`).
 
    ⚠️ Ölçüt "başkasına ait" **değil**, "bu oturuma ait değil". Her iki geliştirici de hem Claude Code hem Codex kullanıyor; aynı kişinin iki ajanı aynı anda çalışabilir. `Kişi` alanı seninkiyle aynı diye bir kaydı atlarsan, kendi diğer ajanınla çakışırsın — bu en olası çakışma senaryosu, çünkü ikisi çoğu zaman aynı makinede ve aynı çalışma dizinindedir.
-3. **Son 7 günü oku.** Özellikle `Tür = "Devir"` olanları — yarım kalmış iş ve dikkat notları orada.
-4. **Kendi kaydını aç.** `Durum = "Devam ediyor"`, `Görev`, `Branch` ve `Dokunulan alanlar` dolu olacak. Başlık formatı `<tarih> · <kişi> · <ajan> · <DW-ID>` — ajan adı zorunlu, aynı kişinin iki kaydı ancak böyle ayırt edilir.
+5. **Son 7 günü oku.** Özellikle `Tür = "Devir"` olanları — yarım kalmış iş ve dikkat notları orada.
+6. **Kendi kaydını aç.** `Durum = "Devam ediyor"`, `Kişi`, `Görev`, `Branch` ve `Dokunulan alanlar` dolu olacak. Başlık formatı `<tarih> · <kişi> · <ajan> · <DW-ID>` — ajan adı zorunlu, aynı kişinin iki kaydı ancak böyle ayırt edilir.
 
 ```sql
--- Aktif kayıtlar (çakışma kontrolü)
-SELECT "Kayıt", "Kişi", "Ajan", "Branch", "Dokunulan alanlar"
+-- Aktif kayıtlar (çakışma kontrolü + kanarya doğrulaması)
+SELECT "Kayıt", "Kişi", "Ajan", "Tür", "Branch", "Dokunulan alanlar"
 FROM "collection://280e2fd0-a14a-4d2d-ac25-24585472348e"
 WHERE "Durum" = 'Devam ediyor'
 ```
 
+> 🚦 **Kanarya neden var.** Protokol olumsuz bir iddiaya dayanıyor: *"aktif kayıt yok, başlayabilirim."* Ama yanlış data source ID'si, eksik paylaşım ve bozuk filtre — üçü de **boş sonuç** döndürür ve "gerçekten kimse yok" ile ayırt edilemez. Kanarya her zaman orada olduğu için, onu görmek sonucun güvenilir olduğunu kanıtlar.
+
 > ⚠️ **Bu SQL aracı ücretsiz planda saatlik kotalı.** Kota dolarsa sorgu hata döner — bunu "aktif kayıt yok" diye **yorumlama**, protokolün tüm güvencesi bu sorguda.
 >
 > Kota dolduğunda yedek yol: `📓 Oturum Kaydı` data source'una **arama** yap (`data_source_url` parametresiyle), dönen kayıtları tek tek `fetch` ile aç ve `Durum` alanına bak. Daha yavaş ama kotasız. İkisi de başarısızsa kullanıcıya söyle ve çoklu-ajan işine başlama.
+>
+> **Kota bütçesi:** SQL yalnızca bu çakışma sorgusu için harcanır. Raporlama, listeleme, ID kontrolü gibi işler `fetch`/`search` ile yapılır — onlar kotasız. Kolaylık işleriyle tüketilen kota, gerçekten gerektiği anda dolu olur.
 
 ### Oturum SIRASINDA — kapsam büyürse
 
@@ -117,7 +137,7 @@ Kural: **iki ajan aynı anda çalışacaksa ayrı çalışma dizini kullanılır
 
 ```bash
 # Aynı repo, ayrı çalışma dizini — git worktree
-git worktree add ../Yt_Automation-codex feat/DW-42-bir-is
+git worktree add ../<repo-adi>-codex feat/DW-42-bir-is
 ```
 
 Her worktree kendi branch'inde olur ve `Dokunulan alanlar` alanına worktree yolunu da yaz. Ayrı dizin yoksa ikinci ajanı **başlatma**.
@@ -138,15 +158,46 @@ Protokolün tekrarlayan adımları komut haline getirildi. Gövdeleri `docs/ajan
 | `/soguk-baslangic` | Projeyi sıfırdan öğren, **kaynaklı** özet üret — yeni ajan devreye girerken |
 | `/denetle` | Bir soğuk başlangıç özetini kaynaklara karşı denetle (farklı oturumda) |
 
-**Codex kullanıyorsan** — repo bazında slash komut desteği yok, aynı dosyalar kişisel prompt dizinine kopyalanır:
+**Codex kullanıyorsan** — repo bazında slash komut desteği yok, aynı dosyalar kişisel prompt dizinine kopyalanır. Kurulum betiği bunu yapıyor:
 
 ```bash
-cp docs/ajan/komutlar/*.md ~/.codex/prompts/
+python3 scripts/ajan-kurulum.py --kur
 ```
 
-Dosya adı komut adı olur (`oturum-basla.md` → `/oturum-basla`). Gövdeler bu yüzden araç-bağımsız dille yazılmıştır; MCP araç adı geçmez.
+Elle yapmak isterseniz `cp docs/ajan/komutlar/*.md ~/.codex/prompts/` (PowerShell: `Copy-Item`) aynı işi görür — ama betik ayrıca kopyanın **bayat olup olmadığını** karşılaştırır, elle kopyalama karşılaştırmaz.
 
-⚠️ Kanonik dosyalar değiştiğinde kopyayı tazelemek gerekir. Komut davranışı beklenmedik geliyorsa önce kopyanın güncel olduğunu kontrol et.
+Dosya adı komut adı olur (`oturum-basla.md` → `/oturum-basla`). Gövdeler bu yüzden araç-bağımsız dille yazılmıştır; MCP araç adı geçmez — Notion'a erişim gerektiren tek adımın (`/oturum-basla` → aktif kayıt sorgusu) MCP istemeyen bir yedeği var: `scripts/oturum-sorgula.py`. Codex tarafında Notion MCP kurmak **gerekmiyor**.
+
+⚠️ Kanonik dosyalar değiştiğinde kopya bayatlar ve Codex eskisini çalıştırır — bunu size söylemez. Komut davranışı beklenmedik geliyorsa önce `python3 scripts/ajan-kurulum.py` çalıştırın.
+
+### İlk kurulum — komutlar çalışmadan önce
+
+```bash
+python3 scripts/ajan-kurulum.py --kur     # kur + doğrula
+python3 scripts/ajan-kurulum.py           # yalnızca doğrula
+```
+
+Saf Python; Windows'ta da aynı komut (Git Bash gerekmez). Beş şeyi kontrol eder ve **çıkış kodu 0 değilse komutlar güvenilir çalışmaz**:
+
+| Kontrol | Otomatik kurulur mu |
+|---|---|
+| Git kimliği tabloda mı (`Kişi` alanının tek kaynağı) | hayır — kendiniz ayarlar |
+| Claude Code sarmalayıcıları yerinde mi | hayır — repo'dan gelir |
+| Codex kopyası var ve **güncel** mi | ✅ `--kur` |
+| Hook'lar tanımlı mı (`SessionStart` + `Stop`) | hayır — repo'dan gelir |
+| Notion erişimi gerçekten çalışıyor mu | hayır — `.env`'e token koyarsınız |
+
+**Neden betik, neden doğrulama.** Bu liste önce düz metin olarak yazıldı; sonra ölçüldü ve `~/.codex/prompts/` **hiç yoktu** — yani Codex tarafında komutların hiçbiri kurulu değildi ve kimse fark etmemişti. Elle yapılan kurulum atlanıyor, atlandığı da görünmüyor.
+
+Görünmemesinin sebebi: **üç önkoşul sessizce bozulur.**
+
+- **Notion erişimi yoksa** sorgu düşer. Protokolün tüm güvencesi o sorgudur; `oturum-basla.md` bu yüzden *"hatayı 'aktif kayıt yok' diye yorumlama"* diyor. Hata bastırılırsa komut "çakışma yok" der ve çalışmaya izin verir — güvence tersine döner. Betik bunu ayırt eder: sorgunun çalıştığını değil, **kanaryanın göründüğünü** kontrol eder.
+- **Git kimliği yanlışsa** kayıt yanlış kişiye açılır ve fark edilmez. `user.name` boşsa komut sorar; **yanlışsa sormaz.**
+- **Codex kopyası bayatsa** eski komut çalışır ve bunu söylemez. Betik kopyayı kanonik dosyayla bayt bayt karşılaştırır.
+
+Bir de betiğin **doğrulayamadığı** tek şey var, çünkü dışarıdan görünmüyor: Claude Code proje hook'ları için bir kez onay ister. Yeni oturumda protokol hatırlatması gelmiyorsa `/hooks` menüsünü bir kez açın.
+
+> Kurulum ekipteki **her makinede ayrı ayrı** yapılır. Bir makinede eksik kurulum diğerindeki doğru kurulumu da işe yaramaz hale getirir: çakışma kontrolü ancak herkes kaydını açıyorsa anlamlıdır.
 
 ---
 
@@ -163,7 +214,7 @@ Dosya adı komut adı olur (`oturum-basla.md` → `/oturum-basla`). Gövdeler bu
    >
    > Bu, hata yapmanı engellemez ama **sessizce** hata yapmanı engeller. Uymayan PR kırmızı olur ve merge edilemez.
 
-8. **Notion'da yeni database veya üst seviye sayfa oluştururken parent'ı her zaman `duo-works` hub sayfası olsun** (`3a79bfc9-3b2e-8104-8f7d-df02d3de4a38`). Ekibin bir üyesi workspace'e **guest** olarak eklenmiş durumda ve guest erişimi sayfa bazındadır — hub ağacının dışında oluşturulan hiçbir şeyi göremez. Bunu yaptıktan sonra kullanıcıya paylaşımı doğrulamasını hatırlat.
+8. **Notion'da yeni database veya üst seviye sayfa oluştururken parent'ı her zaman `duo-works` hub sayfası olsun** (`3a79bfc9-3b2e-8104-8f7d-df02d3de4a38`). Hub ağacının dışına açılan sayfalar dağınık kalır ve keşfedilemez; çalışma alanının tamamı tek ağaçta durur.
 
 ## Kod tarzı
 

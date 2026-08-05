@@ -33,6 +33,27 @@ Notion `📓 Oturum Kaydı`'nda bu oturumda açtığın kayıt. Bulamıyorsan **
 
 PR açıldıysa `GitHub PR` alanını doldur. Notion görevinin de `In review` durumunda ve PR linkinin ona da işlenmiş olduğunu doğrula.
 
-## 5. Raporla
+## 5. Zamanlanmış hattı ilgilendiriyor mu
+
+**Merge canlıya çıkmak demek değil.** Repo'da zamanlanmış bir iş varsa, ayrı bir
+worktree'den sabit bir ref'e iğnelenmiş olarak koşuyor olabilir ve o iğne
+yalnızca elle taşınır:
+
+```bash
+# repo'nun zamanlama betiği neyse (ör. scripts/zamanlama-kur.sh):
+<betik> durum               # canlı hangi ref'te
+<betik> tazele --ref <ref>  # iğneyi taşı
+```
+
+Değişiklik kaynak koduna ya da `scripts/` altına dokunuyorsa sor: canlının bu
+kodu koşması gerekiyor mu? Gerekiyorsa tazelendi mi? Cevap ne olursa olsun
+kaydın `## Ne yapıldı` bölümüne yaz — "merge edildi ama canlı hâlâ eski ref'te"
+bilinmesi gereken bir durumdur, eksikliği değil.
+
+Ölçüldü (2026-08-04): yedi PR'lık iş yazıldı, testleri geçti, merge edildi —
+ve canlı otomasyon günlerce eski ref'ten koştuğu için hiçbiri çalışmadı. Kodun
+yazılmış olmasıyla koşuyor olması karıştırıldı.
+
+## 6. Raporla
 
 Kullanıcıya kaydın kapandığını ve sıradaki adımın ne yazıldığını söyle.
